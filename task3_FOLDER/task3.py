@@ -1,7 +1,7 @@
 import sqlite3 
  
 def all(value):
-    db = sqlite3.connect("task3.db")
+    db = sqlite3.connect("task3_FOLDER/task3.db")
     cursor = db.cursor()
     cursor.execute(f"SELECT * FROM fighter ORDER BY {value} DESC;")
     results = cursor.fetchall()
@@ -10,7 +10,7 @@ def all(value):
         print(f"{planes[1]:<30}{planes[2]:<8}{planes[3]:<7}{planes[4]:<7}{planes[5]:<8}{planes[6]:<7}")
     db.close() 
 def print_all():
-    db = sqlite3.connect("task3.db")
+    db = sqlite3.connect("task3_FOLDER/task3.db")
     cursor = db.cursor()
     sql = "SELECT * FROM fighter;"
     cursor.execute(sql)
