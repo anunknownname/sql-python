@@ -1,7 +1,6 @@
 import sqlite3 
  
 def all(value):
-    print(value)
     db = sqlite3.connect("task3.db")
     cursor = db.cursor()
     cursor.execute(f"SELECT * FROM fighter ORDER BY {value} DESC;")
