@@ -28,7 +28,8 @@ What would you like to do?
 3. Print all aircraft sorted by climbrate.
 4. Print all aircraft sorted by range.
 5. Print all aircraft sorted by payload.
-Enter Exit to exit""")
+6. Exit 
+""")
     if user_input == "1":
         print_all()
     elif user_input == "2":
@@ -39,7 +40,7 @@ Enter Exit to exit""")
         all("range")
     elif user_input == "5":
         all("payload")
-    elif user_input.lower() == "exit":
+    elif user_input == "6":
         break
 
     else:
