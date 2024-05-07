@@ -20,3 +20,5 @@ with sqlite3.connect("sql-python/database_creation_folder/sql.db") as database:
                 editing_table = input("Editing an existing table... \n Enter table to edit: ")
                 editing_columns_name = input("Enter a column name you wish to create: ")
                 editing_columns_datatype = input("Enter the new columns datatype. Enter INTEGER for a number, or TEXT for a word: ")
+            except:
+                pass
