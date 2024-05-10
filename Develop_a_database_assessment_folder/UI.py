@@ -40,10 +40,12 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                             print(i)
                     else:
                         print("That person doesn't seem to have a book out at the moment")
-                elif librarian_choice.lower() == "book"
+                elif librarian_choice.lower() == "book":
+                    pass
 
 
             except:
+                pass
 def user():
     print("You entered the user portal!")
     while True:
@@ -59,6 +61,7 @@ def librarian():
         if librarian_choice == "1":
             break
         if librarian_choice == "2":
+            pass
 
 #User interface
 while True:
