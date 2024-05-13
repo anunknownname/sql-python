@@ -14,6 +14,8 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                     q = (f"SELECT * FROM book_information WHERE size >= {desired_outcome.lower()} ORDER BY size DESC")
                 elif condition.lower() == "all":
                     q = ("SELECT * FROM book_information ORDER BY id DESC")
+                elif condition.lower() == 'author':
+                    q = (f"SELECT * FROM book_information, author WHERE author.name == '{desired_outcome.lower()}' ORDER BY title DESC")
                 else:
                     q = (f'SELECT * FROM book_information WHERE {condition.lower()} == "{desired_outcome.lower()}" ORDER BY title DESC')
                 db.execute(q)
@@ -32,7 +34,7 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                 librarian_choice = input("Enter whether you would like to search for a user, or a book: (user/book) ")
                 if librarian_choice.lower() == "user":
                     user_name = input("Enter the name of the user you would like to search for: ")
-                    db.execute(f"SELECT * FROM user WHERE user_name == {user_name}")
+                    db.execute(f"SELECT * FROM user WHERE user_name == '{user_name}';")
                     results = db.fetchall()
                     if results:
                         print("This person has this information")
@@ -41,11 +43,21 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                     else:
                         print("That person doesn't seem to have a book out at the moment")
                 elif librarian_choice.lower() == "book":
-                    pass
-
+                    book_name = input("Enter the name of the book you would like to search for: ")
+                    db.execute(f'SELECT * FROM user WHERE user.current_book == "{book_name.lower()}";')
+                    results = db.fetchall()
+                    if results:
+                        print("This book is currently kept by this person: ")
+                        for i in results:
+                            print(i)
+                    else:
+                        print("That book does seem to be taken out by anyone at the moment! Have another look on the shelves!")
 
             except:
-                pass
+                print("Invalid Input, try again!")
+    def overdue():
+        
+
 def user():
     print("You entered the user portal!")
     while True:
@@ -57,11 +69,13 @@ def user():
 def librarian():
     print("You entered the librarian portal!")
     while True:
-        librarian_choice = input("Please enter the number for the function you would like to do!\n 1. Go back to login\n 2. Search for the user of a specific book\n")
+        librarian_choice = input("Please enter the number for the function you would like to do!\n 1. Go back to login\n 2. Search for the user of a specific book\n3. Search for all users who have a book overdue\n")
         if librarian_choice == "1":
             break
         if librarian_choice == "2":
-            pass
+            book_user_search()
+        if librarian_choice == "3":
+            overdue()
 
 #User interface
 while True:
