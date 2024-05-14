@@ -1,4 +1,6 @@
 import sqlite3
+from datetime import timedelta
+import datetime
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
@@ -56,7 +58,15 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
             except:
                 print("Invalid Input, try again!")
     def overdue():
+        print("Here are the people that have a book overdue!")
+        db.execute(f"SELECT borrowed_date FROM user;")
+        results = db.fetchall()
+        today = datetime.datetime.now()
+        time_since_borrowed = today.timedelta()
         
+        
+
+
 
 def user():
     print("You entered the user portal!")
