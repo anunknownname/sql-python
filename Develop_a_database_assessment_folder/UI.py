@@ -1,6 +1,5 @@
 import sqlite3
-from datetime import timedelta
-import datetime
+from datetime import timedelta, datetime, date
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
@@ -59,10 +58,47 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                 print("Invalid Input, try again!")
     def overdue():
         print("Here are the people that have a book overdue!")
-        db.execute(f"SELECT borrowed_date FROM user;")
+        db.execute(f"SELECT borrowed_date, user_name FROM user;")
         results = db.fetchall()
-        today = datetime.datetime.now()
-        time_since_borrowed = today.timedelta()
+        today = datetime.now()
+        overdue_margin = today - \
+                            timedelta(days = 14)
+        overdue_margin = str(overdue_margin).split()
+        overdue_margin = overdue_margin[0].split("-")
+        thenbefore = date(int(overdue_margin[0]), int(overdue_margin[1]), int(overdue_margin[2]))
+        for i in results:
+            then = str(i[0])
+            then = then.split("-")
+            borrowed_date = date(int(then[0]), int(then[1]), int(then[2]))
+            delta = thenbefore - borrowed_date
+            delta = str(delta).split(",")
+            if borrowed_date < thenbefore:
+                print(str(i[1]) + " has a book over due " + str(delta[0]))
+    def book_out():
+        print("The following people have a book out!")
+        db.execute("SELECT user_name FROM user WHERE current_book IS NOT NULL")
+        results = db.fetchall()
+        for i in results:
+            print(i[0], "has a book out!")
+    def check_out()
+    def check_for_check_out():
+        name = input("Enter the name to check out a book under!")
+        db.execute(f"SELECT user_name FROM user WHERE current_book IS NULL AND user_name == '{name}'")
+        
+        results = db.fetchall()
+        if results:
+            check_out()
+        
+        else:
+            db.execute(f"SELECT user_name FROM user WHERE user_name == '{name}'")
+            results = db.fetchall()
+            if results:
+                check_out()
+            else:
+                print("Looks like you already have a book out, or you misspelled your name\n Return your current book to be able to check a new one out.")
+    
+
+        
         
         
 
@@ -71,21 +107,25 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
 def user():
     print("You entered the user portal!")
     while True:
-        user_choice = input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Search for specific condition\n")
+        user_choice = input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Search for specific condition\n 3. Check out a book from the library!\n ")
         if user_choice == "1":
             break
         if user_choice == "2":
             search()
+        if user_choice == "3":
+            check_for_check_out()
 def librarian():
     print("You entered the librarian portal!")
     while True:
-        librarian_choice = input("Please enter the number for the function you would like to do!\n 1. Go back to login\n 2. Search for the user of a specific book\n3. Search for all users who have a book overdue\n")
+        librarian_choice = input("Please enter the number for the function you would like to do!\n 1. Go back to login\n 2. Search for the user of a specific book\n 3. Search for all users who have a book overdue\n 4. See who has a book out\n")
         if librarian_choice == "1":
             break
         if librarian_choice == "2":
             book_user_search()
         if librarian_choice == "3":
             overdue()
+        if librarian_choice == "4":
+            book_out()
 
 #User interface
 while True:
