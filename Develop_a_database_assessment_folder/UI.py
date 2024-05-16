@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import timedelta, datetime, date
+import random
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
@@ -80,20 +81,25 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
         results = db.fetchall()
         for i in results:
             print(i[0], "has a book out!")
-    def check_out()
+    def check_out(name):
+        book_name = input("Enter the name of the book you would like to check out: ")
+        db.execute(f"UPDATE user SET current_book = '{book_name}' borrowed_date = {datetime.now()} WHERE user_name == '{name}'")
+        print(f"You checked out {book_name}!")
     def check_for_check_out():
         name = input("Enter the name to check out a book under!")
         db.execute(f"SELECT user_name FROM user WHERE current_book IS NULL AND user_name == '{name}'")
         
         results = db.fetchall()
         if results:
-            check_out()
+            check_out(name)
         
         else:
             db.execute(f"SELECT user_name FROM user WHERE user_name == '{name}'")
             results = db.fetchall()
-            if results:
-                check_out()
+            if not results:
+                rand = random.randint(1, 1000000000)
+                db.execute(f"INSERT INTO user (id, user_name, current_book, borrowed_date) VALUES ({rand}, '{name}', NULL, NULL)")
+                check_out(name)
             else:
                 print("Looks like you already have a book out, or you misspelled your name\n Return your current book to be able to check a new one out.")
     
