@@ -33,7 +33,7 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
     def book_user_search():
         while True:
             try:
-                librarian_choice = input("Enter whether you would like to search for a user, or a book: (user/book) ")
+                librarian_choice = input("Enter whether you would like to search for a user, or a book: (user/book)\nEnter 'Exit' to exit: ")
                 if librarian_choice.lower() == "user":
                     user_name = input("Enter the name of the user you would like to search for: ")
                     db.execute(f"SELECT * FROM user WHERE user_name == '{user_name}';")
@@ -54,6 +54,8 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                             print(i)
                     else:
                         print("That book does seem to be taken out by anyone at the moment! Have another look on the shelves!")
+                else:
+                    break
 
             except:
                 print("Invalid Input, try again!")
@@ -81,45 +83,57 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
         results = db.fetchall()
         for i in results:
             print(i[0], "has a book out!")
-    def check_out(name):
+    def check_out(user_name):
         book_name = input("Enter the name of the book you would like to check out: ")
-        db.execute(f"UPDATE user SET current_book = '{book_name}' borrowed_date = {datetime.now()} WHERE user_name == '{name}'")
-        print(f"You checked out {book_name}!")
+        db.execute(f"SELECT title FROM book_information WHERE title == '{book_name}' AND book_availability_status IS NULL")
+        results = db.fetchall()
+        if results:
+            db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}' WHERE user_name == '{user_name}'")
+            db.execute(f"UPDATE book_information SET book_availability_status = 1 WHERE title == '{book_name}'")
+            database.commit()
+            print(f"You checked out {book_name}!")
+        else:
+            print("That book either doesn't exist, or it isn't available right now. Check your spelling.")
     def check_for_check_out():
         name = input("Enter the name to check out a book under!")
         db.execute(f"SELECT user_name FROM user WHERE current_book IS NULL AND user_name == '{name}'")
-        
         results = db.fetchall()
         if results:
             check_out(name)
-        
         else:
             db.execute(f"SELECT user_name FROM user WHERE user_name == '{name}'")
             results = db.fetchall()
             if not results:
-                rand = random.randint(1, 1000000000)
-                db.execute(f"INSERT INTO user (id, user_name, current_book, borrowed_date) VALUES ({rand}, '{name}', NULL, NULL)")
+                db.execute(f"INSERT INTO user (user_name) VALUES ('{name}')")
+                database.commit()
                 check_out(name)
             else:
                 print("Looks like you already have a book out, or you misspelled your name\n Return your current book to be able to check a new one out.")
-    
-
-        
-        
-        
-
-
-
+    def return_book():
+        name = input("Enter the name to return a book from: ")
+        db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
+        results = db.fetchall()
+        if results:
+            db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
+            results = db.fetchall()
+            db.execute(f"DELETE FROM user WHERE user_name == '{name}'")
+            db.execute(f"UPDATE book_information SET book_availability_status = NULL WHERE title == '{results[0][0]}'")
+            database.commit()
+            print(f"{results[0][0]} has been successfully returned. Have a great day! :)")
+        else:
+            print("You don't seem to have a book out right now. Did you misspell your name?")
 def user():
     print("You entered the user portal!")
     while True:
-        user_choice = input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Search for specific condition\n 3. Check out a book from the library!\n ")
+        user_choice = input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Search for specific condition\n 3. Check out a book from the library!\n 4. Return a book to the library\n ")
         if user_choice == "1":
             break
         if user_choice == "2":
             search()
         if user_choice == "3":
             check_for_check_out()
+        if user_choice == "4":
+            return_book()
 def librarian():
     print("You entered the librarian portal!")
     while True:
@@ -132,16 +146,16 @@ def librarian():
             overdue()
         if librarian_choice == "4":
             book_out()
+def UI():
+    while True:
+        user_type = input("This is the user/librarian login!\n If you are looking to find or checkout books, type in 'user'.\n Otherwise, type in librarian! \n Enter 'Exit' to exit ")
+        if user_type.lower() == "exit":
+            break
+        elif user_type.lower() == "user":
+            user()
+        elif user_type.lower() == "librarian":
+            librarian()
+        else:
+            print("Invalid Input, try again")
 
-#User interface
-while True:
-    user_type = input("This is the user/librarian login!\n If you are looking to find or checkout books, type in 'user'.\n Otherwise, type in librarian! \n Enter 'Exit' to exit ")
-    if user_type.lower() == "exit":
-        break
-    elif user_type.lower() == "user":
-        user()
-    elif user_type.lower() == "librarian":
-        librarian()
-    else:
-        print("Invalid Input, try again")
-
+UI()
