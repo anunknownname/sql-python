@@ -7,25 +7,35 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
     def search():
         while True:
             try:
-                condition = input("What would you like to sort the books by: Author, Genre, Size, Title, or just everything(all)? \n Enter 'Exit' to exit ")
+                condition = input("What would you like to sort the books by: Author, Genre, Size, Title. or just show everything('all')? \n Enter 'Exit' to exit ")
                 if condition.lower() == 'exit':
                     break
-                if condition.lower() != "all":
-                    desired_outcome = input("Input the specific thing you are searching for. Eg: Fantasy, The Hobbit, 345 pages. ")
-                if condition.lower() == "size":
-                    q = (f"SELECT * FROM book_information WHERE size >= {desired_outcome.lower()} ORDER BY size DESC")
+                if condition.lower() == 'genre':
+                    desired_outcome = input("Input the genre you would like to sort by:\n (Fantasy, Supernatural, Crime, Adventure, Romance) ")
+                    q = (f"SELECT * FROM book_information WHERE genre == '{desired_outcome.lower()}' ORDER BY title DESC")
+                elif condition.lower() == "size":
+                    desired_outcome = input("Input the size requirement to sort books by: ")
+                    q = (f"SELECT * FROM book_information WHERE size >= {desired_outcome.lower()} ORDER BY size ASC")
+                elif condition.lower() == 'title':
+                    desired_outcome = input("Input the name of a book you would like to search for: ")
+                    q = f"SELECT * FROM book_information WHERE title == '{desired_outcome.lower()}"
                 elif condition.lower() == "all":
                     q = ("SELECT * FROM book_information ORDER BY id DESC")
                 elif condition.lower() == 'author':
+                    desired_outcome = input("Input the name of an author you would like to search for: ")
                     q = (f"SELECT * FROM book_information, author WHERE author.name == '{desired_outcome.lower()}' ORDER BY title DESC")
-                else:
-                    q = (f'SELECT * FROM book_information WHERE {condition.lower()} == "{desired_outcome.lower()}" ORDER BY title DESC')
                 db.execute(q)
                 results = db.fetchall()
                 if results:
                     print("Here are your results: ")
                     for i in results:
-                        print(i)
+                        print(f"""Book Id: {i[0]}
+                            Book Title: {i[1]}
+                            Book page length: {i[2]}
+                            Book Availability: {i[3]}
+                            Book Genre: {i[5]} \n
+Book Blurb: {i[4]} \n """)
+
                 else:
                     print("There were no results")
             except:
@@ -41,12 +51,15 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                     if results:
                         print("This person has this information")
                         for i in results:
-                            print(i)
+                            print(f""" User ID: {i[0]}
+                                       User name: {i[1]}
+                                       Current Book: {i[2]}
+                                       Borrowed Since: {(i[3])[1:10]}""")
                     else:
                         print("That person doesn't seem to have a book out at the moment")
                 elif librarian_choice.lower() == "book":
                     book_name = input("Enter the name of the book you would like to search for: ")
-                    db.execute(f'SELECT * FROM user WHERE user.current_book == "{book_name.lower()}";')
+                    db.execute(f'SELECT * FROM user WHERE user.current_book == "{book_name}";')
                     results = db.fetchall()
                     if results:
                         print("This book is currently kept by this person: ")
@@ -85,11 +98,15 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
             print(i[0], "has a book out!")
     def check_out(user_name):
         book_name = input("Enter the name of the book you would like to check out: ")
-        db.execute(f"SELECT title FROM book_information WHERE title == '{book_name}' AND book_availability_status IS NULL")
+        db.execute(f"SELECT title FROM book_information WHERE title == '{book_name}' AND book_availability_status == 'Available'")
         results = db.fetchall()
         if results:
+            db.execute(f"SELECT id FROM user WHERE user_name == '{user_name}'")
+            results = db.fetchall()
+            user_id = results[0][0]
             db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}' WHERE user_name == '{user_name}'")
-            db.execute(f"UPDATE book_information SET book_availability_status = 1 WHERE title == '{book_name}'")
+            db.execute(f"UPDATE book_information SET book_availability_status = 'Unavailable', current_user_id = '{user_id}' WHERE title == '{book_name}'")
+
             database.commit()
             print(f"You checked out {book_name}!")
         else:
@@ -117,7 +134,7 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
             db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
             results = db.fetchall()
             db.execute(f"DELETE FROM user WHERE user_name == '{name}'")
-            db.execute(f"UPDATE book_information SET book_availability_status = NULL WHERE title == '{results[0][0]}'")
+            db.execute(f"UPDATE book_information SET book_availability_status = 'Available' WHERE title == '{results[0][0]}'")
             database.commit()
             print(f"{results[0][0]} has been successfully returned. Have a great day! :)")
         else:
