@@ -11,24 +11,24 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                 if condition.lower() == 'exit':
                     break
                 if condition.lower() == 'genre':
-                    desired_outcome = input("Input the genre you would like to sort by:\n (Fantasy, Supernatural, Crime, Adventure, Romance) ")
-                    q = (f"SELECT * FROM book_information WHERE genre == '{desired_outcome.lower()}' ORDER BY title DESC")
+                    desired_genre = input("Input the genre you would like to sort by:\n (Fantasy, Supernatural, Crime, Adventure, Romance) ")
+                    q = (f"SELECT * FROM book_information WHERE genre == '{desired_genre.lower()}' ORDER BY title DESC")
                 elif condition.lower() == "size":
-                    desired_outcome = input("Input the size requirement to sort books by: ")
-                    q = (f"SELECT * FROM book_information WHERE size >= {desired_outcome.lower()} ORDER BY size ASC")
+                    desired_size = input("Input the size requirement to sort books by: ")
+                    q = (f"SELECT * FROM book_information WHERE size >= {desired_size} ORDER BY size ASC")
                 elif condition.lower() == 'title':
-                    desired_outcome = input("Input the name of a book you would like to search for: ")
-                    q = f"SELECT * FROM book_information WHERE title == '{desired_outcome.lower()}"
+                    desired_title = input("Input the name of a book you would like to search for: ")
+                    q = f"SELECT * FROM book_information WHERE title == '{desired_title}'"
                 elif condition.lower() == "all":
                     q = ("SELECT * FROM book_information ORDER BY id DESC")
                 elif condition.lower() == 'author':
-                    desired_outcome = input("Input the name of an author you would like to search for: ")
-                    q = (f"SELECT * FROM book_information, author WHERE author.name == '{desired_outcome.lower()}' ORDER BY title DESC")
+                    desired_author = input("Input the name of an author you would like to search for: ")
+                    q = f"SELECT id, title, size, book_availability_status, blurb, genre FROM book_information JOIN author ON book_information.author_id = author.id WHERE author.name == '{desired_author}'"
                 db.execute(q)
                 results = db.fetchall()
                 if results:
                     print("Here are your results: ")
-                    for i in results:
+                    for i in results: 
                         print(f"""Book Id: {i[0]}
                             Book Title: {i[1]}
                             Book page length: {i[2]}
