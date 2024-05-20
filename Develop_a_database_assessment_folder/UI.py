@@ -54,7 +54,7 @@ Book Blurb: {i[4]} \n """)
                             print(f""" User ID: {i[0]}
                                        User name: {i[1]}
                                        Current Book: {i[2]}
-                                       Borrowed Since: {(i[3])[1:10]}""")
+                                       Borrowed Since: {(i[3])[0:10]} \n""")
                     else:
                         print("That person doesn't seem to have a book out at the moment")
                 elif librarian_choice.lower() == "book":
@@ -64,7 +64,10 @@ Book Blurb: {i[4]} \n """)
                     if results:
                         print("This book is currently kept by this person: ")
                         for i in results:
-                            print(i)
+                            print(f""" User ID: {i[0]}
+                                       User name: {i[1]}
+                                       Current Book: {i[2]} 
+                                       Borrowed Since: {(i[3])[0:10]} \n""")
                     else:
                         print("That book does seem to be taken out by anyone at the moment! Have another look on the shelves!")
                 else:
@@ -85,7 +88,7 @@ Book Blurb: {i[4]} \n """)
         for i in results:
             then = str(i[0])
             then = then.split("-")
-            borrowed_date = date(int(then[0]), int(then[1]), int(then[2]))
+            borrowed_date = date(int(then[0]), int(then[1]), int((then[2])[0:2]))
             delta = thenbefore - borrowed_date
             delta = str(delta).split(",")
             if borrowed_date < thenbefore:
