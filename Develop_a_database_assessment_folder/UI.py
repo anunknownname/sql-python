@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import timedelta, datetime, date
 import random
+import textwrap
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
@@ -34,7 +35,7 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                             Book page length: {i[2]}
                             Book Availability: {i[3]}
                             Book Genre: {i[5]} \n
-Book Blurb: {i[4]} \n """)
+Book Blurb: {textwrap.fill(i[4], 110)} \n """)
 
                 else:
                     print("There were no results")
