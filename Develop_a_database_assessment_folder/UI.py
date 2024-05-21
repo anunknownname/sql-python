@@ -23,7 +23,7 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                     q = ("SELECT * FROM book_information ORDER BY id DESC")
                 elif condition.lower() == 'author':
                     desired_author = input("Input the name of an author you would like to search for: ")
-                    q = f"SELECT id, title, size, book_availability_status, blurb, genre FROM book_information JOIN author ON book_information.author_id = author.id WHERE author.name == '{desired_author}'"
+                    q = f"SELECT book_information.id, title, size, book_availability_status, blurb, genre FROM book_information JOIN author ON book_information.author_id = author.id WHERE author.name == '{desired_author}'"
                 db.execute(q)
                 results = db.fetchall()
                 if results:
@@ -137,7 +137,7 @@ Book Blurb: {i[4]} \n """)
             db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
             results = db.fetchall()
             db.execute(f"DELETE FROM user WHERE user_name == '{name}'")
-            db.execute(f"UPDATE book_information SET book_availability_status = 'Available' WHERE title == '{results[0][0]}'")
+            db.execute(f"UPDATE book_information SET book_availability_status = 'Available', current_user_id = NULL WHERE title == '{results[0][0]}'")
             database.commit()
             print(f"{results[0][0]} has been successfully returned. Have a great day! :)")
         else:
