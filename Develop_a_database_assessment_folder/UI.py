@@ -12,7 +12,7 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                 if condition.lower() == 'exit':
                     break
                 if condition.lower() == 'genre':
-                    desired_genre = input("Input the genre you would like to sort by:\n (Fantasy, Supernatural, Crime, Adventure, Romance) ")
+                    desired_genre = input("Input the genre you would like to sort by:\n (Fantasy, Supernatural, Mystery, Adventure, Romance) ")
                     q = (f"SELECT * FROM book_information WHERE genre == '{desired_genre.lower()}' ORDER BY title DESC")
                 elif condition.lower() == "size":
                     desired_size = input("Input the size requirement to sort books by: ")
@@ -143,6 +143,23 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             print(f"{results[0][0]} has been successfully returned. Have a great day! :)")
         else:
             print("You don't seem to have a book out right now. Did you misspell your name?")
+    def new_book():
+        print("This is where you input new books into the library!")
+        book_name = input("What is the new book's Title? ")
+        book_author = input("What is the new book's Author? ")
+        book_genre = input("What is the new book's main genre? ")
+        book_length = input("What is the new book's length in pages? ")
+        book_blurb = input("Enter the new book's blurb")
+        
+        db.execute(f"INSERT INTO book_information (title, size, blurb, genre) VALUES ('{book_name}', '{book_length}', '{book_blurb}', '{book_genre}')")
+        database.commit()
+        db.execute(f"SELECT id FROM author WHERE name == '{book_author}'")
+        results = db.fetchall()
+        author_id = results[0]
+        db.execute(f"INSERT INTO author (name) VALUES ('{book_author}')")
+        database.commit()
+        db.execute(f"INSERT INTO book_information (author_id) VALUES ('{author_id}')")
+
 def user():
     print("You entered the user portal!")
     while True:
@@ -158,7 +175,7 @@ def user():
 def librarian():
     print("You entered the librarian portal!")
     while True:
-        librarian_choice = input("Please enter the number for the function you would like to do!\n 1. Go back to login\n 2. Search for the user of a specific book\n 3. Search for all users who have a book overdue\n 4. See who has a book out\n")
+        librarian_choice = input("Please enter the number for the function you would like to do!\n 1. Go back to login\n 2. Search for the user of a specific book\n 3. Search for all users who have a book overdue\n 4. See who has a book out\n 5. Enter a new book into the library\n")
         if librarian_choice == "1":
             break
         if librarian_choice == "2":
@@ -167,6 +184,8 @@ def librarian():
             overdue()
         if librarian_choice == "4":
             book_out()
+        if librarian_choice == '5':
+            new_book()
 def UI():
     while True:
         user_type = input("This is the user/librarian login!\n If you are looking to find or checkout books, type in 'user'.\n Otherwise, type in librarian! \n Enter 'Exit' to exit ")
