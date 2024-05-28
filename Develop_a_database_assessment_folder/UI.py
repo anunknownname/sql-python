@@ -2,20 +2,22 @@ import sqlite3
 from datetime import timedelta, datetime, date
 import random
 import textwrap
+
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
     def search():
         while True:
             try:
-                condition = input("What would you like to sort the books by: Author, Genre, Size, Title. or just show everything('all')? \n Enter 'Exit' to exit ")
+                inv = False
+                condition = input("What would you like to sort the library by (genre, author, size, title)? \n Enter 'Exit' to exit ")
                 if condition.lower() == 'exit':
                     break
                 if condition.lower() == 'genre':
                     desired_genre = input("Input the genre you would like to sort by:\n (Fantasy, Supernatural, Mystery, Adventure, Romance) ")
                     q = (f"SELECT * FROM book_information WHERE genre == '{desired_genre.lower()}' ORDER BY title DESC")
                 elif condition.lower() == "size":
-                    desired_size = input("Input the size requirement to sort books by: ")
+                    desired_size = input("Input the minimum length of the book: ")
                     q = (f"SELECT * FROM book_information WHERE size >= {desired_size} ORDER BY size ASC")
                 elif condition.lower() == 'title':
                     desired_title = input("Input the name of a book you would like to search for: ")
@@ -25,8 +27,13 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                 elif condition.lower() == 'author':
                     desired_author = input("Input the name of an author you would like to search for: ")
                     q = f"SELECT book_information.id, title, size, book_availability_status, blurb, genre FROM book_information JOIN author ON book_information.author_id = author.id WHERE author.name == '{desired_author}'"
-                db.execute(q)
-                results = db.fetchall()
+                else:
+                    print("Invalid Input, try again")
+                    inv = True
+                    results = ''
+                if inv == False:
+                    db.execute(q)
+                    results = db.fetchall()
                 if results:
                     print("Here are your results: ")
                     for i in results: 
@@ -39,12 +46,13 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
 
                 else:
                     print("There were no results")
+                    inv = False
             except:
                 print("That was an invalid answer you gave. Please input on of the specified sorting conditions.")
     def book_user_search():
         while True:
             try:
-                librarian_choice = input("Enter whether you would like to search for a user, or a book: (user/book)\nEnter 'Exit' to exit: ")
+                librarian_choice = input("Would you like to find the information of a specific person, or see the information of a person using a specific book? (user/book)\nEnter 'Exit' to exit: ")
                 if librarian_choice.lower() == "user":
                     user_name = input("Enter the name of the user you would like to search for: ")
                     db.execute(f"SELECT * FROM user WHERE user_name == '{user_name}';")
@@ -158,8 +166,18 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         author_id = results[0]
         db.execute(f"INSERT INTO author (name) VALUES ('{book_author}')")
         database.commit()
-        db.execute(f"INSERT INTO book_information (author_id) VALUES ('{author_id}')")
-
+        db.execute(f"INSERT INTO book_information (author_id) VALUES ('{author_id}')") 
+    def print_all():
+        print("Here is a list of every book in the library: ")
+        db.execute("SELECT * FROM book_information ORDER BY id DESC")
+        results = db.fetchall()
+        for i in results: 
+                        print(f"""Book Id: {i[0]}
+                            Book Title: {i[1]}
+                            Book page length: {i[2]}
+                            Book Availability: {i[3]}
+                            Book Genre: {i[5]} \n
+Book Blurb: {textwrap.fill(i[4], 110)} \n """)
 def user():
     print("You entered the user portal!")
     while True:
@@ -172,6 +190,8 @@ def user():
             check_for_check_out()
         if user_choice == "4":
             return_book()
+        else:
+            print("Invalid Input, Try again")
 def librarian():
     print("You entered the librarian portal!")
     while True:
@@ -186,15 +206,19 @@ def librarian():
             book_out()
         if librarian_choice == '5':
             new_book()
+        else:
+            print("Invalid Input, try again.")
 def UI():
     while True:
-        user_type = input("This is the user/librarian login!\n If you are looking to find or checkout books, type in 'user'.\n Otherwise, type in librarian! \n Enter 'Exit' to exit ")
+        user_type = input("This is the user/librarian login!\n If you are looking to find or checkout books, type in 'user'.\n Otherwise, type in 'librarian'! \n Type in 'all' to see all the books, \n and enter 'Exit' to exit ")
         if user_type.lower() == "exit":
             break
         elif user_type.lower() == "user":
             user()
         elif user_type.lower() == "librarian":
             librarian()
+        elif user_type.lower() == "all":
+            print_all()
         else:
             print("Invalid Input, try again")
 
