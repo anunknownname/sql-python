@@ -181,17 +181,14 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
 def user():
     print("You entered the user portal!")
     while True:
-        user_choice = input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Search for specific condition\n 3. Check out a book from the library!\n 4. Return a book to the library\n ")
-        if user_choice == "1":
-            break
-        if user_choice == "2":
-            search()
-        if user_choice == "3":
-            check_for_check_out()
-        if user_choice == "4":
-            return_book()
-        else:
-            print("Invalid Input, Try again")
+        user_choice = input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Search for specific condition\n 3. Check out a book from the library!\n 4. Return a book to the library\n "))
+        if user_choice == 1:
+                break
+        user_choice_dict = {2:search, 3:check_for_check_out, 4:return_book}
+        search_key = user_choice
+        res = list(user_choice_dict.values()).index(search_key)
+        run = user_choice_dict[res]
+        run()
 def librarian():
     print("You entered the librarian portal!")
     while True:
