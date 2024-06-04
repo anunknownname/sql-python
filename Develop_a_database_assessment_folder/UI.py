@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import timedelta, datetime, date #Modules needed to format TIME values from sqLite
 import textwrap # Modulde for formatting paragraphs so words aren't cut of the serial monitor
-
+import random
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
@@ -115,7 +115,13 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             db.execute(f"SELECT id FROM user WHERE user_name == '{user_name}'") #Finding the id of a user whos name has been passed into the function
             results = db.fetchall()
             user_id = results[0][0]
-            db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}' WHERE user_name == '{user_name}'") #Checking out the book using an UPDATE query
+            
+            while True:
+                try:
+                    db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}', user_pin = '{random.randint(10000, 99999)}' WHERE user_name == '{user_name}'") #Checking out the book using an UPDATE query
+                    break
+                except:
+                    db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}', user_pin = '{random.randint(10000, 99999)}' WHERE user_name == '{user_name}'") #Checking out the book using an UPDATE query
             db.execute(f"UPDATE book_information SET book_availability_status = 'Unavailable', current_user_id = '{user_id}' WHERE title == '{book_name}'")#Updating the books data to match the new user
 
             database.commit()
@@ -132,7 +138,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             db.execute(f"SELECT user_name FROM user WHERE user_name == '{name}'") #Searching to see whether the user is in the databse. If they are, because of the prior query, we know that they have a book out, else, they must not be in the database at all
             results = db.fetchall()
             if not results:
-                db.execute(f"INSERT INTO user (user_name) VALUES ('{name}')") #Inserting the new users name into the database
+                db.execute(f"INSERT INTO user (user_name, user_pin) VALUES ('{name}', {random.randint(10000, 99999)})") #Inserting the new users name into the database
                 database.commit()
                 check_out(name) # Passing in user name to next function
             else:
@@ -142,6 +148,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
         results = db.fetchall() #Getting data
         if results:
+            user_pin(name)
             db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
             results = db.fetchall()
             db.execute(f"DELETE FROM user WHERE user_name == '{name}'") #Getting rid of the user from the database, since they no longer have a book out
@@ -177,7 +184,14 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
                             Book Availability: {i[3]}
                             Book Genre: {i[5]} \n
 Book Blurb: {textwrap.fill(i[4], 110)} \n """)
-
+    def user_pin(name):
+        db.execute(f"SELECT user_pin FROM user WHERE user_name == '{name}'")
+        results = db.fetchall()
+        pin = int(input(f"Please enter your library pin, {name} "))
+        while results[0][0] != pin:
+            print("That is not your pin, try again")
+            pin = int(input(f"Please enter your library pin, {name} "))
+        print(f"You have been successfully logged in as {name}!")
 def user():
     print("You entered the user portal!")
     while True:
@@ -208,9 +222,6 @@ def UI():
             list_of_lists[2][user_type - 1]() #Calling specified function
         except:
             print("Invalid Input")
-
-
-
 
 list_of_lists = [[book_user_search, overdue, book_out, new_book], [search, check_for_check_out, return_book], [user, librarian, print_all]] #Creation of the list of all the functions for the UI, user, and librarian portal. Must be below all other functions as otherwise it doesn't work.
 UI() #Calling the UI function and essentially starting the application
