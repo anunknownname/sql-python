@@ -115,21 +115,15 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             db.execute(f"SELECT id FROM user WHERE user_name == '{user_name}'") #Finding the id of a user whos name has been passed into the function
             results = db.fetchall()
             user_id = results[0][0]
-            
-            while True:
-                try:
-                    db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}', user_pin = '{random.randint(10000, 99999)}' WHERE user_name == '{user_name}'") #Checking out the book using an UPDATE query
-                    break
-                except:
-                    db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}', user_pin = '{random.randint(10000, 99999)}' WHERE user_name == '{user_name}'") #Checking out the book using an UPDATE query
+            db.execute(f"UPDATE user SET current_book = '{book_name}', borrowed_date = '{datetime.now()}', user_pin = '{random.randint(10000, 99999)}' WHERE user_name == '{user_name}'") #Checking out the book using an UPDATE query
             db.execute(f"UPDATE book_information SET book_availability_status = 'Unavailable', current_user_id = '{user_id}' WHERE title == '{book_name}'")#Updating the books data to match the new user
-
             database.commit()
             print(f"You checked out {book_name}!")
         else:
             print("That book either doesn't exist, or it isn't available right now. Check your spelling.")
-    def check_for_check_out():
-        name = input("Enter the name to check out a book under!")
+            db.execute(f"DELETE FROM user WHERE user_name == '{user_name}'")
+            database.commit()
+    def check_for_check_out(name):
         db.execute(f"SELECT user_name FROM user WHERE current_book IS NULL AND user_name == '{name}'") #Checking to see if the user is in the database and does not have a book out
         results = db.fetchall()
         if results:
@@ -138,21 +132,24 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             db.execute(f"SELECT user_name FROM user WHERE user_name == '{name}'") #Searching to see whether the user is in the databse. If they are, because of the prior query, we know that they have a book out, else, they must not be in the database at all
             results = db.fetchall()
             if not results:
-                db.execute(f"INSERT INTO user (user_name, user_pin) VALUES ('{name}', {random.randint(10000, 99999)})") #Inserting the new users name into the database
+                new_name = input("Enter your name: ")
+                pin = random.randint(10000, 99999)
+                db.execute(f"INSERT INTO user (user_name, user_pin) VALUES ('{new_name}', {pin})") #Inserting the new users name into the database
                 database.commit()
+                print(f"Your library pin is {pin}, please remember this number!")
+                user_pin(name)
                 check_out(name) # Passing in user name to next function
             else:
                 print("Looks like you already have a book out, or you misspelled your name\n Return your current book to be able to check a new one out.")
-    def return_book():
-        name = input("Enter the name to return a book from: ")
+    def return_book(name):
         db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
         results = db.fetchall() #Getting data
         if results:
             user_pin(name)
             db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
             results = db.fetchall()
-            db.execute(f"DELETE FROM user WHERE user_name == '{name}'") #Getting rid of the user from the database, since they no longer have a book out
-            db.execute(f"UPDATE book_information SET book_availability_status = 'Available', current_user_id = NULL WHERE title == '{results[0][0]}'") #Updating the information of the book so that it is available
+            db.execute(f"UPDATE book_information SET book_availability_status = 'Available', current_user_id = NULL WHERE title == '{results[0][0]};'") #Updating the information of the book so that it is available
+            db.execute(f"UPDATE user SET borrowed_date = NULL, current_book = NULL WHERE user_name == '{name}'")
             database.commit()
             print(f"{results[0][0]} has been successfully returned. Have a great day! :)")
         else:
@@ -194,12 +191,17 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         print(f"You have been successfully logged in as {name}!")
 def user():
     print("You entered the user portal!")
+    name = input("Enter the name to log in as, or if you want to continue into the library, enter 'continue': ")
+    if name == 'continue':
+        name == ""
+    else:
+        user_pin(name)
     while True:
         try:      
             user_choice = int(input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Sort the library books \n 3. Check out a book from the library!\n 4. Return a book to the library\n ")) #Getting user choice for specific function
             if user_choice == 1:
                 break
-            list_of_lists[1][user_choice - 2]() #Calling the function that corresponds to the number the user entered
+            list_of_lists[1][user_choice - 2](name) #Calling the function that corresponds to the number the user entered
         except:
             print("Invalid Input")
 def librarian():
