@@ -95,13 +95,16 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         overdue_margin = overdue_margin[0].split("-") # Formatting the data to use in a date function
         thenbefore = date(int(overdue_margin[0]), int(overdue_margin[1]), int(overdue_margin[2])) #Executing date function. Shows when the threshold for a having a book overdue is
         for i in results:
-            then = str(i[0])
-            then = then.split("-")
-            borrowed_date = date(int(then[0]), int(then[1]), int((then[2])[0:2])) #Getting the DATE value of when a user got a book out
-            delta = thenbefore - borrowed_date #Finding the differential between the overdue threshold and when the user got a book out. Tells the programme how overdue a specific book is
-            delta = str(delta).split(",") #Formatting results
-            if borrowed_date < thenbefore:
-                print(str(i[1]) + " has a book over due " + str(delta[0])) #Printing results
+            if i[0] != None:
+                then = str(i[0])
+                then = then.split("-")
+                borrowed_date = date(int(then[0]), int(then[1]), int((then[2])[0:2])) #Getting the DATE value of when a user got a book out
+                delta = thenbefore - borrowed_date #Finding the differential between the overdue threshold and when the user got a book out. Tells the programme how overdue a specific book is
+                delta = str(delta).split(",") #Formatting results
+                if borrowed_date < thenbefore:
+                    print(str(i[1]) + " has a book over due " + str(delta[0])) #Printing results
+                else:
+                    pass
     def book_out():
         print("The following people have a book out!")
         db.execute("SELECT user_name FROM user WHERE current_book IS NOT NULL") #Executing query to find all users that have a current_book value of NOT NULL
@@ -151,8 +154,10 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             if not results:
                 query = input("Would you like to log in as someome? (1) \nOr, would you like to make a new account? (2)")
                 if query == '1':
-                    user_pin()
-                new_user()
+                    name = input("What is your name?")
+                    user_pin(name)
+                else:
+                    new_user()
 
             else:
                 print("Looks like you already have a book out, or you misspelled your name\n Return your current book to be able to check a new one out.")
@@ -235,13 +240,13 @@ def user(log):
             log += 1
     while True:
         try:      
-            user_choice = int(input("Please enter the number for the search function you would like to use!\n 1. Go back to login\n 2. Sort the library books \n 3. Check out a book from the library!\n 4. Return a book to the library\n ")) #Getting user choice for specific function
+            user_choice = int(input("Please enter the number for the search function you would like to use!\n 1. Go back to login and log out\n 2. Sort the library books \n 3. Check out a book from the library!\n 4. Return a book to the library\n ")) #Getting user choice for specific function
             if user_choice == 1:
                 break
             list_of_lists[1][user_choice - 2](name) #Calling the function that corresponds to the number the user entered
         except:
             print("Invalid Input")
-def librarian():
+def librarian(log):
     print("You entered the librarian portal!")
     while True:
         try:      
@@ -252,7 +257,6 @@ def librarian():
             
         except:
             print("Invalid Input")
-
 
 list_of_lists = [[book_user_search, overdue, book_out, new_book], [search, check_for_check_out, return_book], [user, librarian, print_all]] #Creation of the list of all the functions for the UI, user, and librarian portal. Must be below all other functions as otherwise it doesn't work.
 UI() #Calling the UI function and essentially starting the application
