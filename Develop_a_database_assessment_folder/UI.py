@@ -6,12 +6,12 @@ logg = 0
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
-    def search():
+    def search(name):
         while True:
             try:
                 inv = False
                 condition = input("What would you like to sort the library by (genre, author, size, title)? \n Enter 'Exit' to exit ") #Finding what to search the library by
-                if condition.lower() == 'exit':
+                if condition.lower() == 'exit': #Sorting by termination condition
                     break
                 if condition.lower() == 'genre': #Sorting by genre
                     desired_genre = input("Input the genre you would like to sort by:\n (Fantasy, Supernatural, Mystery, Adventure, Romance) ")
@@ -47,7 +47,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
                 else:
                     print("There were no results")
                     inv = False
-            except:
+            except: #Relooping if something went wrong
                 print("That was an invalid answer you gave. Please input on of the specified sorting conditions.")
     def book_user_search():
         while True:
@@ -59,7 +59,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
                     results = db.fetchall() #Executing Query
                     if results: #Formatting Query
                         print("This person has this information")
-                        for i in results:
+                        for i in results: #Formatting results
                             print(f""" User ID: {i[0]}
                                        User name: {i[1]}
                                        Current Book: {i[2]}
@@ -72,7 +72,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
                     results = db.fetchall()
                     if results: #Formatting Query
                         print("This book is currently kept by this person: ")
-                        for i in results:
+                        for i in results: #Formatting results
                             print(f""" User ID: {i[0]}
                                        User name: {i[1]}
                                        Current Book: {i[2]} 
@@ -95,7 +95,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         overdue_margin = overdue_margin[0].split("-") # Formatting the data to use in a date function
         thenbefore = date(int(overdue_margin[0]), int(overdue_margin[1]), int(overdue_margin[2])) #Executing date function. Shows when the threshold for a having a book overdue is
         for i in results:
-            if i[0] != None:
+            if i[0] != None: #If the DATE value of user in the borrowed_data column IS NOT NULL
                 then = str(i[0])
                 then = then.split("-")
                 borrowed_date = date(int(then[0]), int(then[1]), int((then[2])[0:2])) #Getting the DATE value of when a user got a book out
@@ -109,13 +109,13 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         print("The following people have a book out!")
         db.execute("SELECT user_name FROM user WHERE current_book IS NOT NULL") #Executing query to find all users that have a current_book value of NOT NULL
         results = db.fetchall()
-        for i in results:
+        for i in results: #Formatting results
             print(i[0], "has a book out!")
     def new_user():
         while True:
-            new_name = input("Enter your name: ")
-            pin = random.randint(10000, 99999)
-            db.execute(f"SELECT user_name FROM user WHERE user_name == '{new_name}'")
+            new_name = input("Enter your name: ") #Getting input
+            pin = random.randint(10000, 99999) #Assigning the new user a randomized library pin
+            db.execute(f"SELECT user_name FROM user WHERE user_name == '{new_name}'") #Checking to see whether the new user's name is already taken
             results = db.fetchall()
             if results:
                 print("It looks like someone else has that username already.")
@@ -151,13 +151,13 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         else:
             db.execute(f"SELECT user_name FROM user WHERE user_name == '{name}'") #Searching to see whether the user is in the databse. If they are, because of the prior query, we know that they have a book out, else, they must not be in the database at all
             results = db.fetchall()
-            if not results:
+            if not results: #If the user doesn't exist in the database, ask them what they would like to do.
                 query = input("Would you like to log in as someome? (1) \nOr, would you like to make a new account? (2)")
                 if query == '1':
                     name = input("What is your name?")
-                    user_pin(name)
+                    user_pin(name) #If the user didn't log in initially but now wants to check out a book
                 else:
-                    new_user()
+                    new_user() #Creating a new user
 
             else:
                 print("Looks like you already have a book out, or you misspelled your name\n Return your current book to be able to check a new one out.")
@@ -165,12 +165,12 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
         results = db.fetchall() #Getting data
         if name == "new_person":
-            query = input("Do you want to make a new account (1), or log in as someone? (2)")
+            query = input("Do you want to make a new account (1), or log in as someone? (2)") #If the user has not logged in, ask if they want to log in or create a new account
             if query == '1':
                 new_user(name)
             else:
-                pin_name = input("Enter your name: ")
-                user_pin(pin_name)
+                pin_name = input("Enter your name: ") #If they just didn't log in
+                user_pin(pin_name) #Sending to log in function
                 db.execute(f"SELECT user_name FROM user WHERE user_name == '{pin_name}'")
                 results = db.fetchall()
         if results:
@@ -179,7 +179,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             db.execute(f"UPDATE book_information SET book_availability_status = 'Available', current_user_id = NULL WHERE title == '{results[0][0]}';") #Updating the information of the book so that it is available
             db.execute(f"UPDATE user SET borrowed_date = NULL, current_book = NULL WHERE user_name == '{name}'")
             database.commit()
-            print(f"{results[0][0]} has been successfully returned. Have a great day! :)")
+            print(f"{results[0][0]} has been successfully returned. Have a great day! :)") #Telling the user that their book has been returned
         else:
             print("You don't seem to have a book out right now. Did you misspell your name?")
 
@@ -198,10 +198,10 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         author_id = results[0]
         db.execute(f"INSERT INTO author (name) VALUES ('{book_author}')") #Updating the author table
         database.commit()
-        db.execute(f"INSERT INTO book_information (author_id) VALUES ('{author_id}')") 
+        db.execute(f"INSERT INTO book_information (author_id) VALUES ('{author_id}')")  #Updating the book_information table
     def print_all():
         print("Here is a list of every book in the library: ")
-        db.execute("SELECT * FROM book_information ORDER BY id DESC")
+        db.execute("SELECT * FROM book_information ORDER BY id DESC") #Executing sql query
         results = db.fetchall()
         for i in results: #Printing all books with nice formatting using textwrap module
                         print(f"""Book Id: {i[0]}
@@ -211,10 +211,10 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
                             Book Genre: {i[5]} \n
 Book Blurb: {textwrap.fill(i[4], 110)} \n """)
     def user_pin(name):
-        db.execute(f"SELECT user_pin FROM user WHERE user_name == '{name}'")
+        db.execute(f"SELECT user_pin FROM user WHERE user_name == '{name}'") #Getting the user pin from the name of the user
         results = db.fetchall()
-        pin = int(input(f"Please enter your library pin, {name} "))
-        while results[0][0] != pin:
+        pin = int(input(f"Please enter your library pin, {name} ")) #Getting input
+        while results[0][0] != pin: #Keep asking for pin while the user input is not the pin
             print("That is not your pin, try again")
             pin = int(input(f"Please enter your library pin, {name} "))
         print(f"You have been successfully logged in as {name}!")
@@ -232,11 +232,11 @@ def UI():
 def user(log):
     if log == 0:
         print("You entered the user portal!")
-        name = input("Enter the name to log in as, or if you want to continue into the library, enter 'continue': ")
-        if name == 'continue':
+        name = input("Enter the name to log in as, or if you want to continue into the library, enter 'continue': ") #Asking if user wants to log in, or continue into the library without logging in
+        if name == 'continue': #If they don't want to log in, set their name to 'new person' for formatting in further functions
             name = "new_person"
         else:
-            user_pin(name)
+            user_pin(name) #If they want to log in, log them in
             log += 1
     while True:
         try:      
@@ -259,4 +259,4 @@ def librarian(log):
             print("Invalid Input")
 
 list_of_lists = [[book_user_search, overdue, book_out, new_book], [search, check_for_check_out, return_book], [user, librarian, print_all]] #Creation of the list of all the functions for the UI, user, and librarian portal. Must be below all other functions as otherwise it doesn't work.
-UI() #Calling the UI function and essentially starting the application
+UI() #Calling the UI function and essentially starting the application/
