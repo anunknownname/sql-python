@@ -2,14 +2,12 @@ import sqlite3
 from datetime import timedelta, datetime, date #Modules needed to format TIME values from sqLite
 import textwrap # Modulde for formatting paragraphs so words aren't cut of the serial monitor
 import random
-logg = 0
 #Function creations
 with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.db") as database:
     db = database.cursor()
     def search(name):
         while True:
             try:
-                inv = False
                 condition = input("What would you like to sort the library by (genre, author, size, title)? \n Enter 'Exit' to exit ") #Finding what to search the library by
                 if condition.lower() == 'exit': #Sorting by termination condition
                     break
@@ -30,10 +28,9 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                 else:
                     print("Invalid Input, try again")
                     inv = True
-                    results = ''
-                if inv == False: #Executing the query ONLY if new data has been inputted. This means it won't run if there was prior invalid input
-                    db.execute(q)
-                    results = db.fetchall()
+                    q = ''
+                db.execute(q)
+                results = db.fetchall()
                 if results: #Formatting the text results nicely using textwrap module
                     print("Here are your results: ")
                     for i in results: 
@@ -43,7 +40,8 @@ with sqlite3.connect("sql-python/Develop_a_database_assessment_folder/database.d
                             Book Availability: {i[3]}
                             Book Genre: {i[5]} \n
 Book Blurb: {textwrap.fill(i[4], 110)} \n """)
-
+                elif inv == True:
+                    pass
                 else:
                     print("There were no results")
                     inv = False
@@ -81,7 +79,6 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
                         print("That book does seem to be taken out by anyone at the moment! Have another look on the shelves!")
                 else:
                     break
-
             except:
                 print("Invalid Input, try again!")
     def overdue():
@@ -126,7 +123,6 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
                 user_pin(new_name)
                 check_out(new_name) # Passing in user name to next function
                 break
-
     def check_out(user_name):
         book_name = input("Enter the name of the book you would like to check out: ") #Getting input
         db.execute(f"SELECT title FROM book_information WHERE title == '{book_name}' AND book_availability_status == 'Available'") #Using a query to check whether a book exists by seeing if it has data when searched using an SQL query
@@ -143,7 +139,6 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             print("That book either doesn't exist, or it isn't available right now. Check your spelling.")
             database.commit()
     def check_for_check_out(name):
-        print(name)
         db.execute(f"SELECT user_name FROM user WHERE current_book IS NULL AND user_name == '{name}'") #Checking to see if the user is in the database and does not have a book out
         results = db.fetchall()
         if results:
@@ -152,27 +147,31 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             db.execute(f"SELECT user_name FROM user WHERE user_name == '{name}'") #Searching to see whether the user is in the databse. If they are, because of the prior query, we know that they have a book out, else, they must not be in the database at all
             results = db.fetchall()
             if not results: #If the user doesn't exist in the database, ask them what they would like to do.
-                query = input("Would you like to log in as someome? (1) \nOr, would you like to make a new account? (2)")
+                query = input(" Enter 1 to log in as someome?\n Enter 2 to make a new account?\n You will be signed out after checking out a book: ")
                 if query == '1':
-                    name = input("What is your name?")
+                    name = input("What is your name? ")
                     user_pin(name) #If the user didn't log in initially but now wants to check out a book
-                else:
+                    check_for_check_out(name)
+                elif query == '2':
                     new_user() #Creating a new user
-
+                else:
+                    print("Invalid Input")
             else:
                 print("Looks like you already have a book out, or you misspelled your name\n Return your current book to be able to check a new one out.")
     def return_book(name):
         db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
         results = db.fetchall() #Getting data
         if name == "new_person":
-            query = input("Do you want to make a new account (1), or log in as someone? (2)") #If the user has not logged in, ask if they want to log in or create a new account
+            query = input(" Enter 1 to log in as someone (You will be auto signed out after returning a book)\n Enter 2 to go back to the user portal: ") #If the user has not logged in, ask if they want to log in or create a new account
             if query == '1':
-                new_user(name)
-            else:
                 pin_name = input("Enter your name: ") #If they just didn't log in
                 user_pin(pin_name) #Sending to log in function
                 db.execute(f"SELECT user_name FROM user WHERE user_name == '{pin_name}'")
+                name = pin_name
                 results = db.fetchall()
+            else:
+                return
+                
         if results:
             db.execute(f"SELECT current_book FROM user WHERE user_name == '{name}'")
             results = db.fetchall()
@@ -182,7 +181,6 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
             print(f"{results[0][0]} has been successfully returned. Have a great day! :)") #Telling the user that their book has been returned
         else:
             print("You don't seem to have a book out right now. Did you misspell your name?")
-
     def new_book():
         print("This is where you input new books into the library!") #Getting data
         book_name = input("What is the new book's Title? ")
@@ -199,7 +197,7 @@ Book Blurb: {textwrap.fill(i[4], 110)} \n """)
         db.execute(f"INSERT INTO author (name) VALUES ('{book_author}')") #Updating the author table
         database.commit()
         db.execute(f"INSERT INTO book_information (author_id) VALUES ('{author_id}')")  #Updating the book_information table
-    def print_all():
+    def print_all(log):
         print("Here is a list of every book in the library: ")
         db.execute("SELECT * FROM book_information ORDER BY id DESC") #Executing sql query
         results = db.fetchall()
@@ -223,7 +221,7 @@ def UI():
     log = 0
     while True:
         try:
-            user_type = int(input("This is the user/librarian login!\n Enter 1 to access the user portal.\n Otherwise, enter 2 to access the librarian portal! \n Enter 3 to see all books in the library, \n Finally, enter 4 to close the application! ")) #Getting input
+            user_type = int(input("This is the user/librarian login!\nEnter 1 to access the user portal\nEnter 2 to access the librarian portal!\nEnter 3 to see all books in the library\nEnter 4 to close the application! ")) #Getting input
             if user_type == 4:
                 break
             list_of_lists[2][user_type - 1](log) #Calling specified function
@@ -240,7 +238,11 @@ def user(log):
             log += 1
     while True:
         try:      
-            user_choice = int(input("Please enter the number for the search function you would like to use!\n 1. Go back to login and log out\n 2. Sort the library books \n 3. Check out a book from the library!\n 4. Return a book to the library\n ")) #Getting user choice for specific function
+            if name != 'new_person':
+                namer = 'You are logged in as ' + name
+            else:
+                namer = 'You are not logged in'
+            user_choice = int(input(f"Please enter the number for the function you would like to use!\n {namer}\n 1. Go back to login and log out\n 2. Sort the library books \n 3. Check out a book from the library!\n 4. Return a book to the library\n ")) #Getting user choice for specific function
             if user_choice == 1:
                 break
             list_of_lists[1][user_choice - 2](name) #Calling the function that corresponds to the number the user entered
@@ -254,9 +256,7 @@ def librarian(log):
             if librarian_choice == 1:
                 break
             list_of_lists[0][librarian_choice - 2]() # Calling specified funciton
-            
         except:
             print("Invalid Input")
-
 list_of_lists = [[book_user_search, overdue, book_out, new_book], [search, check_for_check_out, return_book], [user, librarian, print_all]] #Creation of the list of all the functions for the UI, user, and librarian portal. Must be below all other functions as otherwise it doesn't work.
-UI() #Calling the UI function and essentially starting the application/
+UI() #Calling the UI function and essentially starting the application
